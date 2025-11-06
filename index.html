@@ -838,23 +838,21 @@
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
   document.getElementById('selectedDateDisplay').textContent = date.toLocaleDateString('en-US', options);
 
-  // Fetch available slots (send the clicked date as YYYY-MM-DD)
-  await fetchAvailableSlots(date);
-  
-  // Scroll to time slots section on mobile (viewport width <= 768px)
+  // Scroll to time slots section IMMEDIATELY on mobile (before fetching)
   if (window.innerWidth <= 768) {
     const timeSlotsSection = document.querySelector('.timeslots-section');
     if (timeSlotsSection) {
-      // Small delay to ensure slots are rendered before scrolling
-      setTimeout(() => {
-        timeSlotsSection.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
-        });
-      }, 100);
+      timeSlotsSection.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
     }
   }
+
+  // Fetch available slots (send the clicked date as YYYY-MM-DD)
+  await fetchAvailableSlots(date);
 }
+
 
 
   async function fetchAvailableSlots(date) {
