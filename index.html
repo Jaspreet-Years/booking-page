@@ -605,233 +605,258 @@
     </div>
 
     <script>
-        // Configuration
-        const CONFIG = {
-            GET_SLOTS_WEBHOOK: 'https://moreyears.app.n8n.cloud/webhook-test/get-available-slots',
-            CREATE_BOOKING_WEBHOOK: 'https://your-n8n-instance.com/webhook/create-booking'
-        };
+  // Configuration
+  const CONFIG = {
+    GET_SLOTS_WEBHOOK: 'https://your-n8n-instance.com/webhook/get-available-slots',
+    CREATE_BOOKING_WEBHOOK: 'https://your-n8n-instance.com/webhook/create-booking'
+  };
 
-        // State
-        let currentDate = new Date();
-        let selectedDate = null;
-        let selectedTime = null;
-        let availableSlots = [];
+  // --- Helper: format clicked calendar date as YYYY-MM-DD (no timezone conversion) ---
+  function formatDateYMD(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
 
-        // Initialize
-        renderCalendar();
+  // State
+  let currentDate = new Date();
+  let selectedDate = null;
+  let selectedTime = null;
+  let availableSlots = [];
 
-        function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            
-            // Update header
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'];
-            document.getElementById('calendarMonth').textContent = `${monthNames[month]} ${year}`;
+  // Initialize
+  renderCalendar();
 
-            // Get first day of month and days in month
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+  function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    // Update header
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('calendarMonth').textContent = `${monthNames[month]} ${year}`;
 
-            // Build calendar
-            const calendar = document.getElementById('calendar');
-            calendar.innerHTML = '';
+    // Get first day of month and days in month
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
-            // Day headers
-            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            dayHeaders.forEach(day => {
-                const header = document.createElement('div');
-                header.className = 'calendar-day-header';
-                header.textContent = day;
-                calendar.appendChild(header);
-            });
+    // Build calendar
+    const calendar = document.getElementById('calendar');
+    calendar.innerHTML = '';
 
-            // Empty cells before first day
-            for (let i = 0; i < firstDay; i++) {
-                const empty = document.createElement('div');
-                empty.className = 'calendar-day empty';
-                calendar.appendChild(empty);
-            }
+    // Day headers
+    const dayHeaders = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    dayHeaders.forEach(day => {
+      const header = document.createElement('div');
+      header.className = 'calendar-day-header';
+      header.textContent = day;
+      calendar.appendChild(header);
+    });
 
-            // Days
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(year, month, day);
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                dayElement.textContent = day;
+    // Empty cells before first day
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('div');
+      empty.className = 'calendar-day empty';
+      calendar.appendChild(empty);
+    }
 
-                // Disable past dates
-                if (date < today) {
-                    dayElement.classList.add('disabled');
-                } else {
-                    dayElement.onclick = () => selectDate(date);
-                }
+    // Days
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      const dayElement = document.createElement('div');
+      dayElement.className = 'calendar-day';
+      dayElement.textContent = day;
 
-                // Mark today
-                if (date.toDateString() === today.toDateString()) {
-                    dayElement.classList.add('today');
-                }
+      // Disable past dates
+      if (date < today) {
+        dayElement.classList.add('disabled');
+      } else {
+        dayElement.onclick = () => selectDate(date);
+      }
 
-                // Mark selected date
-                if (selectedDate && date.toDateString() === selectedDate.toDateString()) {
-                    dayElement.classList.add('selected');
-                }
+      // Mark today
+      if (date.toDateString() === today.toDateString()) {
+        dayElement.classList.add('today');
+      }
 
-                calendar.appendChild(dayElement);
-            }
-        }
+      // Mark selected date
+      if (selectedDate && date.toDateString() === selectedDate.toDateString()) {
+        dayElement.classList.add('selected');
+      }
 
-        function changeMonth(direction) {
-            currentDate.setMonth(currentDate.getMonth() + direction);
-            renderCalendar();
-        }
+      calendar.appendChild(dayElement);
+    }
+  }
 
-        async function selectDate(date) {
-            selectedDate = date;
-            selectedTime = null;
-            renderCalendar();
+  function changeMonth(direction) {
+    currentDate.setMonth(currentDate.getMonth() + direction);
+    renderCalendar();
+  }
 
-            // Update display
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('selectedDateDisplay').textContent = date.toLocaleDateString('en-US', options);
+  async function selectDate(date) {
+    selectedDate = date;
+    selectedTime = null;
+    renderCalendar();
 
-            // Fetch available slots
-            await fetchAvailableSlots(date);
-        }
+    // Update display
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('selectedDateDisplay').textContent = date.toLocaleDateString('en-US', options);
 
-        async function fetchAvailableSlots(date) {
-            const timeSlots = document.getElementById('timeSlots');
-            timeSlots.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>Loading available slots...</div></div>';
-            hideError();
+    // Fetch available slots (send the clicked date as YYYY-MM-DD)
+    await fetchAvailableSlots(date);
+  }
 
-            const dateStr = date.toISOString().split('T')[0];
+  async function fetchAvailableSlots(date) {
+    const timeSlots = document.getElementById('timeSlots');
+    timeSlots.innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>Loading available slots...</div></div>';
+    hideError();
 
-            try {
-                const response = await fetch(`${CONFIG.GET_SLOTS_WEBHOOK}?date=${dateStr}`);
-                
-                if (!response.ok) throw new Error('Failed to fetch slots');
+    // <-- IMPORTANT: use formatDateYMD to avoid timezone shifts -->
+    const dateStr = formatDateYMD(date);
 
-                const data = await response.json();
-                availableSlots = data.availableSlots || [];
+    try {
+      const response = await fetch(`${CONFIG.GET_SLOTS_WEBHOOK}?date=${dateStr}`);
+      if (!response.ok) throw new Error('Failed to fetch slots');
 
-                if (availableSlots.length > 0) {
-                    renderTimeSlots(availableSlots);
-                } else {
-                    timeSlots.innerHTML = '<div class="placeholder-message">No available slots for this date.<br>Please select another date.</div>';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Unable to load available slots. Please try again.');
-                timeSlots.innerHTML = '<div class="placeholder-message">Error loading slots.<br>Please try again.</div>';
-            }
-        }
+      const data = await response.json();
 
-        function renderTimeSlots(slots) {
-            const timeSlots = document.getElementById('timeSlots');
-            timeSlots.innerHTML = '';
+      // normalize possible shapes
+      let slots = [];
+      if (Array.isArray(data) && data.length && data[0].availableSlots) {
+        slots = data[0].availableSlots;
+      } else if (data.availableSlots) {
+        slots = data.availableSlots;
+      } else if (Array.isArray(data) && data.length && data[0].json && data[0].json.availableSlots) {
+        slots = data[0].json.availableSlots;
+      } else {
+        // try to find an array in the response
+        const maybeArray = Object.values(data).find(v => Array.isArray(v));
+        if (maybeArray) slots = maybeArray;
+      }
 
-            slots.forEach(time => {
-                const slot = document.createElement('div');
-                slot.className = 'time-slot';
-                slot.textContent = time;
-                slot.onclick = () => selectTime(time, slot);
-                timeSlots.appendChild(slot);
-            });
-        }
+      availableSlots = slots || [];
 
-        function selectTime(time, element) {
-            selectedTime = time;
-            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-            element.classList.add('selected');
-            document.getElementById('continueBtn').disabled = false;
-            hideError();
-        }
+      if (availableSlots.length > 0) {
+        renderTimeSlots(availableSlots);
+      } else {
+        timeSlots.innerHTML = '<div class="placeholder-message">No available slots for this date.<br>Please select another date.</div>';
+        document.getElementById('continueBtn').disabled = true;
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showError('Unable to load available slots. Please try again.');
+      timeSlots.innerHTML = '<div class="placeholder-message">Error loading slots.<br>Please try again.</div>';
+      document.getElementById('continueBtn').disabled = true;
+    }
+  }
 
-        function goToStep2() {
-            if (!selectedDate || !selectedTime) return;
+  function renderTimeSlots(slots) {
+    const timeSlots = document.getElementById('timeSlots');
+    timeSlots.innerHTML = '';
 
-            // Update summary
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const dateStr = selectedDate.toLocaleDateString('en-US', options);
-            document.getElementById('summaryDateTime').textContent = `${dateStr} at ${selectedTime}`;
+    slots.forEach(time => {
+      const slot = document.createElement('div');
+      slot.className = 'time-slot';
+      slot.textContent = time;
+      slot.onclick = () => selectTime(time, slot);
+      timeSlots.appendChild(slot);
+    });
+  }
 
-            // Switch steps
-            document.getElementById('step1').classList.remove('active');
-            document.getElementById('step2').classList.add('active');
-            document.getElementById('step1Indicator').classList.remove('active');
-            document.getElementById('step1Indicator').classList.add('completed');
-            document.getElementById('step2Indicator').classList.add('active');
+  function selectTime(time, element) {
+    selectedTime = time;
+    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+    element.classList.add('selected');
+    document.getElementById('continueBtn').disabled = false;
+    hideError();
+  }
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+  function goToStep2() {
+    if (!selectedDate || !selectedTime) return;
 
-        function goToStep1() {
-            document.getElementById('step2').classList.remove('active');
-            document.getElementById('step1').classList.add('active');
-            document.getElementById('step2Indicator').classList.remove('active');
-            document.getElementById('step1Indicator').classList.remove('completed');
-            document.getElementById('step1Indicator').classList.add('active');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    // Update summary
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateStr = selectedDate.toLocaleDateString('en-US', options);
+    document.getElementById('summaryDateTime').textContent = `${dateStr} at ${selectedTime}`;
 
-        document.getElementById('bookingForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+    // Switch steps
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('step2').classList.add('active');
+    document.getElementById('step1Indicator').classList.remove('active');
+    document.getElementById('step1Indicator').classList.add('completed');
+    document.getElementById('step2Indicator').classList.add('active');
 
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Confirming...';
-            hideError();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                date: selectedDate.toISOString().split('T')[0],
-                time: selectedTime,
-                notes: document.getElementById('notes').value,
-                duration: 45,
-                timestamp: new Date().toISOString()
-            };
+  function goToStep1() {
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('step1').classList.add('active');
+    document.getElementById('step2Indicator').classList.remove('active');
+    document.getElementById('step1Indicator').classList.remove('completed');
+    document.getElementById('step1Indicator').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-            try {
-                const response = await fetch(CONFIG.CREATE_BOOKING_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
+  document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.message || 'Booking failed');
-                }
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Confirming...';
+    hideError();
 
-                // Show success
-                document.getElementById('step2').classList.remove('active');
-                document.getElementById('successMessage').classList.add('active');
-                document.getElementById('step2Indicator').classList.remove('active');
-                document.getElementById('step2Indicator').classList.add('completed');
-            } catch (error) {
-                console.error('Error:', error);
-                showError(error.message || 'Something went wrong. Please try again.');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Confirm Booking';
-            }
-        });
+    const formData = {
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      // <-- Send clicked calendar day as YYYY-MM-DD (no timezone conversion) -->
+      date: formatDateYMD(selectedDate),
+      time: selectedTime,
+      notes: document.getElementById('notes').value,
+      duration: 45,
+      timestamp: new Date().toISOString()
+    };
 
-        function showError(message) {
-            const errorEl = document.getElementById('errorMessage');
-            errorEl.textContent = message;
-            errorEl.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    try {
+      const response = await fetch(CONFIG.CREATE_BOOKING_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
 
-        function hideError() {
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-    </script>
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Booking failed');
+      }
+
+      // Show success
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('successMessage').classList.add('active');
+      document.getElementById('step2Indicator').classList.remove('active');
+      document.getElementById('step2Indicator').classList.add('completed');
+    } catch (error) {
+      console.error('Error:', error);
+      showError(error.message || 'Something went wrong. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Confirm Booking';
+    }
+  });
+
+  function showError(message) {
+    const errorEl = document.getElementById('errorMessage');
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function hideError() {
+    document.getElementById('errorMessage').style.display = 'none';
+  }
+</script>
+
 </body>
 </html>
