@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule a Meeting</title>
+    <title>Schedule a Meeting with Ivan Barashki</title>
     <style>
         @import url('https://fonts.cdnfonts.com/css/boldenvan');
         
@@ -386,12 +386,20 @@
             border: 2px solid transparent;
         }
 
+        .host-profile:hover {
+            border-color: #0077b5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 119, 181, 0.15);
+        }
+
         .host-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
             overflow: hidden;
             flex-shrink: 0;
+            border: 3px solid #bf2c5d;
+            box-shadow: 0 2px 8px rgba(191, 44, 93, 0.2);
         }
 
         .host-avatar img {
@@ -536,6 +544,7 @@
         .success-message p {
             color: #666;
             font-size: 16px;
+            margin-bottom: 10px;
         }
 
         .error-message {
@@ -570,7 +579,7 @@
             }
 
             .step-text {
-                font-size: 12px;
+                display: none;
             }
         }
     </style>
@@ -722,6 +731,9 @@
                 </svg>
                 <h3>Booking Confirmed!</h3>
                 <p>You'll receive a calendar invite and confirmation email shortly.</p>
+                <button class="btn btn-primary" style="margin-top: 30px; max-width: 300px; margin-left: auto; margin-right: auto;" onclick="resetPage()">
+                    Book Another Meeting
+                </button>
             </div>
         </div>
     </div>
@@ -965,6 +977,41 @@
       submitBtn.textContent = 'Confirm Booking';
     }
   });
+
+  function resetPage() {
+    // Reset state
+    currentDate = new Date();
+    selectedDate = null;
+    selectedTime = null;
+    availableSlots = [];
+    
+    // Reset form
+    document.getElementById('bookingForm').reset();
+    
+    // Reset UI
+    document.getElementById('successMessage').classList.remove('active');
+    document.getElementById('step1').classList.add('active');
+    document.getElementById('step2').classList.remove('active');
+    
+    // Reset step indicators
+    document.getElementById('step1Indicator').classList.add('active');
+    document.getElementById('step1Indicator').classList.remove('completed');
+    document.getElementById('step2Indicator').classList.remove('active');
+    document.getElementById('step2Indicator').classList.remove('completed');
+    
+    // Reset continue button
+    document.getElementById('continueBtn').disabled = true;
+    
+    // Reset time slots display
+    document.getElementById('timeSlots').innerHTML = '<div class="placeholder-message">👈 Please select a date from the calendar</div>';
+    document.getElementById('selectedDateDisplay').textContent = 'Select a date to see available times';
+    
+    // Re-render calendar
+    renderCalendar();
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   function showError(message) {
     const errorEl = document.getElementById('errorMessage');
