@@ -358,6 +358,84 @@
             margin-top: 2px;
         }
 
+        /* Host Section Styling */
+        .host-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .host-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .host-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .host-profile:hover {
+            border-color: #0077b5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 119, 181, 0.15);
+        }
+
+        .host-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 3px solid #bf2c5d;
+            box-shadow: 0 2px 8px rgba(191, 44, 93, 0.2);
+        }
+
+        .host-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .host-details {
+            flex: 1;
+        }
+
+        .host-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .host-linkedin {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #0077b5;
+            font-weight: 500;
+        }
+
+        .host-linkedin svg {
+            opacity: 0.8;
+        }
+
+        .host-profile:hover .host-linkedin {
+            color: #005885;
+        }
+
         .contact-form {
             width: 100%;
         }
@@ -587,6 +665,25 @@
                                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                             </svg>
                             <span>Microsoft Teams Meeting</span>
+                        </div>
+                        
+                        <!-- Host Information -->
+                        <div class="host-section">
+                            <div class="host-header">Host</div>
+                            <a href="https://www.linkedin.com/in/ivan-barashki-9727a070/" target="_blank" class="host-profile">
+                                <div class="host-avatar">
+                                    <img src="Ivan.jpeg" alt="Ivan Barashki">
+                                </div>
+                                <div class="host-details">
+                                    <div class="host-name">Ivan Barashki</div>
+                                    <div class="host-linkedin">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                                        </svg>
+                                        View LinkedIn Profile
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                     </div>
 
