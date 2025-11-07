@@ -250,6 +250,7 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             max-height: 350px;
+            overflow-y: auto;
             padding-right: 5px;
         }
 
@@ -486,7 +487,7 @@
         .btn-primary {
             background: #ffd47a;
             color: #303030;
-            display:flex;
+            display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
@@ -511,10 +512,6 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
-            display:flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
         }
 
         .success-message {
@@ -632,6 +629,7 @@
                     </div>
                 </div>
 
+                <!-- Button moved outside the grid -->
                 <div class="button-group">
                     <button class="btn btn-primary" id="continueBtn" onclick="goToStep2()" disabled>
                         Next <img src="https://www.years.com/cdn/shop/files/Vector.svg?v=1684229610" alt="" style="width: 8px;" />
@@ -830,30 +828,28 @@
   }
 
   async function selectDate(date) {
-  selectedDate = date;
-  selectedTime = null;
-  renderCalendar();
+    selectedDate = date;
+    selectedTime = null;
+    renderCalendar();
 
-  // Update display
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('selectedDateDisplay').textContent = date.toLocaleDateString('en-US', options);
+    // Update display
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('selectedDateDisplay').textContent = date.toLocaleDateString('en-US', options);
 
-  // Scroll to time slots section IMMEDIATELY on mobile (before fetching)
-  if (window.innerWidth <= 768) {
-    const timeSlotsSection = document.querySelector('.timeslots-section');
-    if (timeSlotsSection) {
-      timeSlotsSection.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-      });
+    // Scroll to time slots section IMMEDIATELY on mobile (before fetching)
+    if (window.innerWidth <= 768) {
+      const timeSlotsSection = document.querySelector('.timeslots-section');
+      if (timeSlotsSection) {
+        timeSlotsSection.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }
     }
+
+    // Fetch available slots (send the clicked date as YYYY-MM-DD)
+    await fetchAvailableSlots(date);
   }
-
-  // Fetch available slots (send the clicked date as YYYY-MM-DD)
-  await fetchAvailableSlots(date);
-}
-
-
 
   async function fetchAvailableSlots(date) {
     const timeSlots = document.getElementById('timeSlots');
