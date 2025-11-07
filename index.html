@@ -120,13 +120,14 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
-            min-height: 400px;
+            align-items: start;
         }
 
         .calendar-section {
             background: #f8f9fa;
             padding: 25px;
             border-radius: 12px;
+            height: fit-content;
         }
 
         .calendar-header {
@@ -249,8 +250,6 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            max-height: 350px;
-            overflow-y: auto;
             padding-right: 5px;
         }
 
